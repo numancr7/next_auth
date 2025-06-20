@@ -8,6 +8,7 @@ import {
   upload,
 } from "@imagekit/next";
 import { useRef, useState } from "react";
+import { useNotification } from "./Notification";
 
 interface FileUploadProps {
   onSuccess: (res: any) => void;
@@ -18,17 +19,21 @@ interface FileUploadProps {
 const FileUpload = ({ onSuccess, onProgress, fileType }: FileUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { showNotification } = useNotification();
 
   //optional validation
-
   const validateFile = (file: File) => {
     if (fileType === "video") {
       if (!file.type.startsWith("video/")) {
         setError("Please upload a valid video file");
+        showNotification("Please upload a valid video file", "error");
+        return false;
       }
     }
     if (file.size > 100 * 1024 * 1024) {
       setError("File size must be less than 100 MB");
+      showNotification("File size must be less than 100 MB", "error");
+      return false;
     }
     return true;
   };
@@ -58,13 +63,15 @@ const FileUpload = ({ onSuccess, onProgress, fileType }: FileUploadProps) => {
             onProgress(Math.round(percent))
           }
         },
-        
       });
-      onSuccess(res)
+      onSuccess(res);
+      showNotification("Upload successful!", "success");
     } catch (error) {
-        console.error("Upload failed", error)
+      setError("Upload failed");
+      showNotification("Upload failed", "error");
+      console.error("Upload failed", error)
     } finally {
-        setUploading(false)
+      setUploading(false)
     }
   };
 

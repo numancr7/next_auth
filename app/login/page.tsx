@@ -13,17 +13,26 @@ export default function LoginPage() {
     e.preventDefault();
     
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
+      // react-query
+      // loading, error, debounce
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
+      const data = await res.json();
 
-      if (result?.error) {
-        throw new Error(result.error);
-      }else{
-        router.push("/");
+      if (!res.ok) {
+        throw new Error(data.error);
       }
+
+      console.log(data);
+      router.push("/");
     } catch (error) {
       console.error(error);
     }
